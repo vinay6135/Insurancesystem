@@ -17,6 +17,7 @@ public class CustomerPolicyResponseDTO {
     private Double premiumAmount;
 
     private InstallmentType installmentType;
+    private String agentPhone;
 
 	public Long getCustomerPolicyId() {
 		return customerPolicyId;
@@ -72,7 +73,16 @@ public class CustomerPolicyResponseDTO {
 
 	public void setInstallmentType(InstallmentType installmentType) {
 		this.installmentType = installmentType;
-	} 
+	}
+
+	public String getAgentPhone() {
+		return agentPhone;
+	}
+
+	public void setAgentPhone(String agentPhone) {
+		this.agentPhone = agentPhone;
+	}
+	
     
     
 	    

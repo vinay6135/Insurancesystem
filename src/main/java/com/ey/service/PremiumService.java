@@ -158,8 +158,10 @@ public class PremiumService {
                 " paid for " + type +
                 " installment." 
         );
+        CustomerPolicyResponseDTO resdto=customerpolicymapper.toResponse(cp);
+        resdto.setInstallmentType(type);
 
-        return customerpolicymapper.toResponse(cp); 
+        return resdto;
     }
     
     private double calculateAgeBasedPremium(double basePremium, int age) {

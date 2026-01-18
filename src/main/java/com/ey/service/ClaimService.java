@@ -1,18 +1,30 @@
 package com.ey.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ey.dto.response.ClaimResponseDTO;
+import com.ey.entity.Agent;
 import com.ey.entity.Claim;
 import com.ey.entity.CustomerPolicy;
 import com.ey.enums.ClaimStatus;
+import com.ey.exception.ResourceNotFoundException;
+import com.ey.mapper.ClaimMapper;
+import com.ey.repository.AgentRepository;
 import com.ey.repository.ClaimRepository;
 import com.ey.repository.CustomerPolicyRepository;
 
 @Service
 public class ClaimService {
+	
+	@Autowired
+	private ClaimMapper claimmapper;
+	
+	@Autowired
+	private AgentRepository agentRepository;
 
     @Autowired
     private ClaimRepository repository;
@@ -23,7 +35,7 @@ public class ClaimService {
     @Autowired
     private NotificationService notificationService;
 
-    public Claim raiseClaim(Long customerPolicyId, String reason) {
+    public ClaimResponseDTO raiseClaim(Long customerPolicyId, String reason) {
 
         CustomerPolicy cp = customerPolicyRepository.findById(customerPolicyId)
                 .orElseThrow(() -> new RuntimeException("Customer policy not found"));
@@ -38,7 +50,26 @@ public class ClaimService {
                 "Claim submitted successfully"
         );
 
-        return repository.save(claim);
+        repository.save(claim);
+        return claimmapper.toResponse(claim);
+    }
+    
+    public List<ClaimResponseDTO> getAssignedClaims(String agentEmail) {
+
+        Agent agent = agentRepository.findByUserEmail(agentEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Agent not found"));
+        
+        List<Claim> list=repository.findByCustomerPolicyAgentIdAndStatus(agent.getId(),ClaimStatus.SUBMITTED);
+        if(!list.isEmpty())
+        {
+        	List<ClaimResponseDTO> resdto=new ArrayList<>();
+        	for(Claim claim:list)
+        	{
+        		resdto.add(claimmapper.toResponse(claim));
+        	}
+        	return resdto;	
+        }
+        throw new ResourceNotFoundException("No Claims Assigned");
     }
 
     public Claim updateStatus(Long id, ClaimStatus status) {

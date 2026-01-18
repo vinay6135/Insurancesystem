@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.ey.dto.request.AgentRequestDTO;
 import com.ey.dto.response.AgentResponseDTO;
+import com.ey.dto.response.CustomerPolicyResponseDTO;
 import com.ey.entity.Agent;
 import com.ey.entity.CustomerPolicy;
 import com.ey.entity.User;
@@ -16,6 +17,7 @@ import com.ey.enums.Role;
 import com.ey.exception.BusinessException;
 import com.ey.exception.ResourceNotFoundException;
 import com.ey.mapper.AgentMapper;
+import com.ey.mapper.CustomerPolicyMapper;
 import com.ey.repository.AgentRepository;
 import com.ey.repository.CustomerPolicyRepository;
 import com.ey.repository.UserRepository;
@@ -24,6 +26,9 @@ import com.ey.repository.UserRepository;
 public class AgentService {
 	@Autowired
 	private AgentMapper agentmapper;
+	
+	@Autowired
+	private CustomerPolicyMapper cpmapper;
 
     @Autowired
     private AgentRepository agentRepository;
@@ -55,7 +60,7 @@ public class AgentService {
     }
 
     
-    public CustomerPolicy assignAgent(Long customerPolicyId, Long agentId) {
+    public CustomerPolicyResponseDTO assignAgent(Long customerPolicyId, Long agentId) {
 
         CustomerPolicy cp = customerPolicyRepository.findById(customerPolicyId)
                 .orElseThrow(() -> new BusinessException("Customer policy not found",HttpStatus.NOT_FOUND));
@@ -64,7 +69,9 @@ public class AgentService {
                 .orElseThrow(() -> new BusinessException("Agent not found",HttpStatus.NOT_FOUND));
 
         cp.setAgent(agent);
-        return customerPolicyRepository.save(cp);
+        CustomerPolicyResponseDTO resdto=cpmapper.toResponse(cp);
+        resdto.setAgentPhone(agent.getPhone());
+        return resdto;
     }
 
     public AgentResponseDTO getAgent(Long id) {

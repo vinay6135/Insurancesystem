@@ -16,10 +16,10 @@ public class CustomerPolicyMapper {
 		response.setCustomerPolicyId(request.getId());
 		response.setPolicyId(request.getId());
 		response.setPolicyName(request.getPolicy().getPolicyName());
-		response.setCustomerPolicyId(request.getId());
 		response.setCoverageAmount(request.getPolicy().getCoverageAmount());
 		response.setPremiumAmount(request.getPolicy().getPremiumAmount());
 		response.setStatus(request.getStatus());
+		//response.setInstallmentType(null);
 		return response;
 	}
 

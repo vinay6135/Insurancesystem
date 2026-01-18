@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication;
 
 import com.ey.dto.request.AgentRequestDTO;
 import com.ey.dto.response.AgentResponseDTO;
+import com.ey.dto.response.CustomerPolicyResponseDTO;
 import com.ey.entity.Agent;
 import com.ey.entity.CustomerPolicy;
 import com.ey.service.AgentService;
@@ -51,7 +52,7 @@ public class AgentController {
     }
     @PutMapping("/assign/{customerPolicyId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<CustomerPolicy> assign(
+    public ResponseEntity<CustomerPolicyResponseDTO> assign(
             @PathVariable Long customerPolicyId,
             @RequestBody Map<String, Long> request) {
 
