@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import com.ey.dto.response.CustomerPolicyResponseDTO;
 import com.ey.entity.Customer;
 import com.ey.entity.CustomerPolicy;
 import com.ey.entity.Notification;
@@ -18,6 +19,7 @@ import com.ey.enums.PolicyStatus;
 import com.ey.exception.BadRequestException;
 import com.ey.exception.BusinessException;
 import com.ey.exception.ResourceNotFoundException;
+import com.ey.mapper.CustomerPolicyMapper;
 import com.ey.repository.CustomerPolicyRepository;
 import com.ey.repository.NotificationRepository;
 import com.ey.repository.PremiumPaymentRepository;
@@ -33,6 +35,9 @@ public class PremiumService {
     
     @Autowired
     private NotificationRepository notificationrepo;
+    
+    @Autowired
+    private CustomerPolicyMapper customerpolicymapper;
 
     
     public Map<String, Object> preview(Long customerPolicyId) {
@@ -54,7 +59,7 @@ public class PremiumService {
         );
     }
 
-    public CustomerPolicy pay(Long customerPolicyId, InstallmentType type) {
+    public CustomerPolicyResponseDTO pay(Long customerPolicyId, InstallmentType type) {
 
         CustomerPolicy cp = customerPolicyRepository.findById(customerPolicyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer policy not found"));
@@ -83,6 +88,32 @@ public class PremiumService {
             }
             default -> throw new BadRequestException("Invalid installment type");
         }
+        double amount =
+                type == InstallmentType.YEARLY ? finalPremium :
+                type == InstallmentType.QUARTERLY ? finalPremium / 4 :
+                finalPremium / 12;
+        if(!premiumPaymentRepository.existsByCustomerPolicyAndStatus(cp,PaymentStatus.PAID))
+        {
+        	sendNotification(
+                    cp.getCustomer(),
+                    "Premium payment request: ₹" + amount +
+                    " for " + type +
+                    " installment." 
+            );
+        	
+        	sendNotification(
+                    cp.getCustomer(),
+                    "Welcome aboard!\n"
+                    + "\n"
+                    + "Your first premium of ₹"+amount+" has been received.\n"
+                    + "Your policy "+cp.getPolicy().getPolicyName()+" is now active.\n"
+                    + "\n"
+                    + "Stay insured. Stay protected.\n"
+                    
+            );
+        	
+        	
+        }
 
         boolean alreadyPaid =
                 premiumPaymentRepository
@@ -96,12 +127,6 @@ public class PremiumService {
                     HttpStatus.CONFLICT
             );
         }
-
-        double amount =
-                type == InstallmentType.YEARLY ? finalPremium :
-                type == InstallmentType.QUARTERLY ? finalPremium / 4 :
-                finalPremium / 12;
-
 
         sendNotification(
                 cp.getCustomer(),
@@ -131,10 +156,10 @@ public class PremiumService {
                 cp.getCustomer(),
                 "Payment successful: ₹" + amount +
                 " paid for " + type +
-                " installment. Next due after " + end
+                " installment." 
         );
 
-        return cp;
+        return customerpolicymapper.toResponse(cp); 
     }
     
     private double calculateAgeBasedPremium(double basePremium, int age) {

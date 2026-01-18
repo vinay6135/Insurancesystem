@@ -13,21 +13,27 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.core.Authentication;
 
+import com.ey.dto.response.NotificationResponseDTO;
 import com.ey.entity.Notification;
 import com.ey.repository.NotificationRepository;
+import com.ey.service.NotificationService;
 
 @RestController
 @RequestMapping("/notification")
 public class NotificationController {
+	
+	@Autowired
+	private NotificationService notificationservice;
 
     @Autowired
     private NotificationRepository repository;
 
-    @GetMapping("/getAll")
+    @GetMapping("/getAll/{id}")
     @PreAuthorize("hasRole('CUSTOMER')")
-    public ResponseEntity<List<Notification>> getAll(Authentication auth) {
+    public ResponseEntity<List<NotificationResponseDTO>> getAll(@PathVariable long id,Authentication auth) {
+    	return ResponseEntity.ok(notificationservice.toResponse(id,auth.getName()));
 
-        return ResponseEntity.ok(repository.findAll());
+        
     }
 
     @DeleteMapping("/delete/{id}")

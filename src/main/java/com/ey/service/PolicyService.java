@@ -90,6 +90,7 @@ public class PolicyService {
     public PolicyResponseDTO updateStatus(Long id, boolean active) {
         Policy policy=policyRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Policy not found with Id:"+id));
         policy.setActive(active);
+        policyRepository.save(policy);
         return policymapper.toResponse(policy);
         		
     }

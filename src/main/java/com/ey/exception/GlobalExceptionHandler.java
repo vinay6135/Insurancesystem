@@ -45,19 +45,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<APIError> handleGeneric(Exception ex) {
-
-        APIError error = new APIError(
-                "Internal server error",
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                LocalDateTime.now()
-        );
-
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(error);
-    }
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<APIError> handleGeneric(Exception ex) {
+//
+//        APIError error = new APIError(
+//                "Internal server error",
+//                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+//                LocalDateTime.now()
+//        );
+//
+//        return ResponseEntity
+//                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                .body(error);
+//    }
 }
 
 

@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.ey.entity.CustomerPolicy;
 import com.ey.entity.PremiumPayment;
 import com.ey.enums.PaymentStatus;
 
@@ -17,6 +18,10 @@ boolean existsByCustomerPolicyIdAndPeriodStartDateAndPeriodEndDateAndStatus(
         Long customerPolicyId,
         LocalDate start,
         LocalDate end,
+        PaymentStatus status
+);
+boolean existsByCustomerPolicyAndStatus(
+        CustomerPolicy customerPolicy,
         PaymentStatus status
 );
 

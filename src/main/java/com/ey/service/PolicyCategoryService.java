@@ -54,10 +54,17 @@ public class PolicyCategoryService {
     }
 
     public PolicyCategoryResponseDTO update(UpdatePolicyCategoryRequest updated) {
+    	if(repository.findById(updated.getId()).isPresent())
+    	{
         PolicyCategory category = repository.findById(updated.getId()).get();
         category.setCategoryDescription(updated.getCategoryDescription());
         PolicyCategory saved=repository.save(category);
         return policymapper.toResponse(saved);
+    	}
+    	else
+    	{
+    		throw new ResourceNotFoundException("No PolicyCategory Found with Id: "+updated.getId());
+    	}
     }
 
     public void delete(Long id) {
