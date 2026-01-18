@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.ey.dto.response.ClaimResponseDTO;
@@ -11,11 +12,15 @@ import com.ey.entity.Agent;
 import com.ey.entity.Claim;
 import com.ey.entity.CustomerPolicy;
 import com.ey.enums.ClaimStatus;
+import com.ey.enums.PaymentStatus;
+import com.ey.enums.PolicyStatus;
+import com.ey.exception.BusinessException;
 import com.ey.exception.ResourceNotFoundException;
 import com.ey.mapper.ClaimMapper;
 import com.ey.repository.AgentRepository;
 import com.ey.repository.ClaimRepository;
 import com.ey.repository.CustomerPolicyRepository;
+import com.ey.repository.PremiumPaymentRepository;
 
 @Service
 public class ClaimService {
@@ -34,6 +39,9 @@ public class ClaimService {
 
     @Autowired
     private NotificationService notificationService;
+    
+    @Autowired
+    private PremiumPaymentRepository pprepo;
 
     public ClaimResponseDTO raiseClaim(Long customerPolicyId, String reason) {
 
@@ -72,19 +80,39 @@ public class ClaimService {
         throw new ResourceNotFoundException("No Claims Assigned");
     }
 
-    public Claim updateStatus(Long id, ClaimStatus status) {
+    public ClaimResponseDTO updateclaim(Long claimid, String agentEmail) {
+    	
+    	Agent agent = agentRepository.findByUserEmail(agentEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Agent not found"));
 
-        Claim claim = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Claim not found"));
-
-        claim.setStatus(status);
+        Claim claim = repository.findById(claimid)
+                .orElseThrow(() -> new ResourceNotFoundException("Claim not found"));
+        
+        CustomerPolicy policy = claim.getCustomerPolicy();
+        
+        if (policy.getStatus() != PolicyStatus.ACTIVE) {
+            throw new BusinessException("Policy is not active",HttpStatus.BAD_REQUEST);
+        }
+        
+        boolean pendingPremium =
+                pprepo.existsByCustomerPolicyIdAndStatus(
+                        policy.getId(),
+                        PaymentStatus.DUE
+                );
+        if (pendingPremium) {
+            throw new BusinessException("Premium payment pending. Claim cannot be verified",HttpStatus.BAD_REQUEST);
+        }
+        claim.setStatus(ClaimStatus.VERIFIED);
 
         notificationService.notify(
                 claim.getCustomerPolicy().getCustomer(),
-                "Your claim status updated to " + status
+                "Your claim has been VERIFIED by Agent "
+                        + agent.getName()
+                        + ". It is now pending admin approval."
         );
 
-        return repository.save(claim);
+        repository.save(claim);
+        return claimmapper.toResponse(claim);
     }
 
     public Claim get(Long id) {

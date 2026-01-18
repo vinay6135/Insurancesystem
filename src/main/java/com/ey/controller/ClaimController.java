@@ -48,17 +48,17 @@ public class ClaimController {
     	return ResponseEntity.ok(service.getAssignedClaims(auth.getName()));
     }
 
-    @PutMapping("/edit/{id}")
+    @PutMapping("/verify/{id}")
     @PreAuthorize("hasAnyRole('AGENT','ADMIN')")
-    public ResponseEntity<Claim> update(
-            @PathVariable Long id,
-            @RequestBody Map<String, String> request) {
+    public ResponseEntity<ClaimResponseDTO> update(
+            @PathVariable Long id,Authentication auth
+           ) {
 
         return ResponseEntity.ok(
-                service.updateStatus(
-                        id,
-                        ClaimStatus.valueOf(request.get("status"))
-                )
+                service.updateclaim(
+                        id,auth.getName()
+                        )
+                
         );
     }
 

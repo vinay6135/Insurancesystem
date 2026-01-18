@@ -24,6 +24,7 @@ boolean existsByCustomerPolicyAndStatus(
         CustomerPolicy customerPolicy,
         PaymentStatus status
 );
+boolean existsByCustomerPolicyIdAndStatus(Long id, PaymentStatus due);
 
 }
 
